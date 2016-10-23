@@ -169,32 +169,40 @@ namespace regexp
 			return null;
 		}
 			
-		private void PrintAst(Exp ast) {
+		private void PrintAst(Exp ast, int level) {
+			for (int i = 0; i < level; i++) {
+				Console.Write ("  ");
+			}
+
 			if (ast.Type == Exp.ExpType.Token) {
 				Console.Write ("(Token " + ast.C + ")");
 				Console.WriteLine ();
+				return;
 			} else if (ast.Type == Exp.ExpType.Concat) {
 				Console.Write ("(Concat ");
-				PrintAst (ast.E1);
-				PrintAst (ast.E2);
-				Console.Write (")");
 				Console.WriteLine ();
+				PrintAst (ast.E1, level + 1);
+				PrintAst (ast.E2, level + 1);
 			} else if (ast.Type == Exp.ExpType.Alter) {
 				Console.Write ("(Alter ");
-				PrintAst (ast.E1);
-				PrintAst (ast.E2);
-				Console.Write (")");
 				Console.WriteLine ();
+				PrintAst (ast.E1, level + 1);
+				PrintAst (ast.E2, level + 1);
 			} else if (ast.Type == Exp.ExpType.Kleene) {
 				Console.Write ("(Kleene ");
-				PrintAst (ast.E1);
-				Console.Write(")");
 				Console.WriteLine ();
+				PrintAst (ast.E1, level + 1);
 			}
+
+			for (int i = 0; i < level; i++) {
+				Console.Write ("  ");
+			}
+			Console.Write (")");
+			Console.WriteLine ();
 		}
 			
 		public void Print() {
-			PrintAst (Ast);
+			PrintAst (Ast, 0);
 		}
 	}
 
