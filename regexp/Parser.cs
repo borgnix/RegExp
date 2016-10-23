@@ -1,9 +1,11 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace regexp
 {
 	class Parser {
+		private static HashSet<Char> SpecialTokens = new HashSet<Char> {'\\', '(', ')', '|', '*'};
+
 		public string ExpStr { get; }
 		public Exp Ast { get; }
 
@@ -14,8 +16,8 @@ namespace regexp
 			Ast = ParseRegExp ();
 		}
 
-		private bool InRange(char c) {
-			return c != '\\' && c != '(' && c != ')' && c != '|' && c != '*';
+		private static bool InRange(char c) {
+			return !Parser.SpecialTokens.Contains (c);
 		}
 			
 		/* Grammar
@@ -98,17 +100,11 @@ namespace regexp
 
 		    if (c == '\\') {
 				Cursor += 1;
-				switch (ExpStr[Cursor]) {
-				case '\\': 
-				case '(':
-				case ')':
-				case '|':
-				case '*':
+				if (!InRange (c)) {
 					Cursor += 1;
-					return Exp.buildToken(ExpStr[Cursor - 1]);
-				default:
-					return null;
+					return Exp.buildToken (ExpStr [Cursor - 1]);
 				}
+				return null;
 			} 
 
 			if (c == '(') {
@@ -160,5 +156,4 @@ namespace regexp
 			PrintAst (Ast, 0);
 		}
 	}
-
 }
