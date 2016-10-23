@@ -49,6 +49,14 @@ namespace regexp
 	}
 
 	class Parser {
+		public string ExpStr { get; }
+		public Exp Ast { get; }
+
+		public Parser (string regexp) {
+			ExpStr = regexp;
+			Ast = Parse (regexp);
+		}
+
 		public static bool InRange(char c) {
 			return c != '\\' && c != '(' && c != ')' && c != '|' && c != '*';
 		}
@@ -60,19 +68,19 @@ namespace regexp
 		 * basicexp := <alnum> | ( <regexp> )
 		 */
 
-		public static Tuple<int,Exp> parseRegExp(string expstr, int idx) {
-			var first = parseExp (expstr, idx);
+		public static Tuple<int,Exp> ParseRegExp(string ExpStr, int idx) {
+			var first = ParseExp (ExpStr, idx);
 			int idx1 = first.Item1;
 			Exp exp1 = first.Item2;
 
-			if (idx1 >= expstr.Length) {
+			if (idx1 >= ExpStr.Length) {
 				return first;
 			}
 
 			Tuple<int, Exp> result = null;
 
-			if (expstr [idx1] == '|') {
-				var second = parseRegExp (expstr, idx1+1);
+			if (ExpStr [idx1] == '|') {
+				var second = ParseRegExp (ExpStr, idx1+1);
 				int idx2 = second.Item1;
 				Exp exp2 = second.Item2;
 
@@ -86,18 +94,18 @@ namespace regexp
 			return result;
 		}
 
-		public static Tuple<int, Exp> parseExp(string expstr, int idx) {
-			var first = parseRepExp (expstr, idx);
+		public static Tuple<int, Exp> ParseExp(string ExpStr, int idx) {
+			var first = ParseRepExp (ExpStr, idx);
 			if (first == null) {
 				return null;
 			}
 			int idx1 = first.Item1;
 			Exp exp1 = first.Item2;
 
-			if (idx1 >= expstr.Length) {
+			if (idx1 >= ExpStr.Length) {
 				return first;
 			}
-			var rest = parseExp (expstr, idx1);
+			var rest = ParseExp (ExpStr, idx1);
 
 			Tuple<int, Exp> result = null;
 			if (rest != null) {
@@ -113,8 +121,8 @@ namespace regexp
 			return result;
 		}
 
-		public static Tuple<int, Exp> parseRepExp(string expstr, int idx) {
-			var first = parseBasicExp (expstr, idx);
+		public static Tuple<int, Exp> ParseRepExp(string ExpStr, int idx) {
+			var first = ParseBasicExp (ExpStr, idx);
 
 
 			if (first == null) {
@@ -123,11 +131,11 @@ namespace regexp
 				int idx1 = first.Item1;
 				Exp exp1 = first?.Item2;
 
-				if (idx1 >= expstr.Length) {
+				if (idx1 >= ExpStr.Length) {
 					return first;
 				}
 
-				if (expstr [idx1] == '*') {
+				if (ExpStr [idx1] == '*') {
 					Exp exp = Exp.buildKleene (exp1);
 					return new Tuple<int, Exp> (idx1 + 1, exp);
 				} else {
@@ -136,31 +144,31 @@ namespace regexp
 			}
 		}
 
-		public static Tuple<int, Exp> parseBasicExp(string expstr, int idx) {
-			if (idx >= expstr.Length) {
+		public static Tuple<int, Exp> ParseBasicExp(string ExpStr, int idx) {
+			if (idx >= ExpStr.Length) {
 				return null;
 			}
 
-			char c = expstr [idx];
+			char c = ExpStr [idx];
 			if (InRange (c)) {
 				return new Tuple<int, Exp> (idx + 1, Exp.buildToken (c));
 			} else if (c == '\\') {
-				switch (expstr[idx + 1]) {
+				switch (ExpStr[idx + 1]) {
 				case '\\': 
 				case '(':
 				case ')':
 				case '|':
 				case '*':
-					return new Tuple<int, Exp> (idx + 1, Exp.buildToken(expstr[idx + 1]));
+					return new Tuple<int, Exp> (idx + 1, Exp.buildToken(ExpStr[idx + 1]));
 				default:
 					return null;
 				}
 			} if (c == '(') {
-				var regexp = parseRegExp (expstr, idx + 1);
+				var regexp = ParseRegExp (ExpStr, idx + 1);
 				int idx1 = regexp.Item1;
 				Exp exp1 = regexp.Item2;
 
-				if (expstr [idx1] == ')') {
+				if (ExpStr [idx1] == ')') {
 					return new Tuple<int, Exp> (idx1 + 1, exp1);
 				}
 			}
@@ -168,8 +176,8 @@ namespace regexp
 			return null;
 		}
 
-		Exp parse(String expstr) {
-			var result = parseRegExp (expstr, 0);
+		Exp Parse(String expstr) {
+			var result = ParseRegExp (expstr, 0);
 			return result.Item2;
 		}
 
