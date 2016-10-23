@@ -126,33 +126,28 @@ namespace regexp
 			}
 
 			if (ast.Type == Exp.ExpType.Token) {
-				Console.Write ("(Token " + ast.C + ")");
-				Console.WriteLine ();
+				Console.WriteLine ("(Token " + ast.C + ")");
 				return;
 			} else if (ast.Type == Exp.ExpType.Concat) {
-				Console.Write ("(Concat ");
-				Console.WriteLine ();
+				Console.WriteLine ("(Concat ");
 				PrintAst (ast.E1, level + 1);
 				PrintAst (ast.E2, level + 1);
 			} else if (ast.Type == Exp.ExpType.Alter) {
-				Console.Write ("(Alter ");
-				Console.WriteLine ();
+				Console.WriteLine ("(Alter ");
 				PrintAst (ast.E1, level + 1);
 				PrintAst (ast.E2, level + 1);
 			} else if (ast.Type == Exp.ExpType.Kleene) {
-				Console.Write ("(Kleene ");
-				Console.WriteLine ();
+				Console.WriteLine ("(Kleene ");
 				PrintAst (ast.E1, level + 1);
 			}
 
 			for (int i = 0; i < level; i++) {
 				Console.Write ("  ");
 			}
-			Console.Write (")");
-			Console.WriteLine ();
+			Console.WriteLine (")");
 		}
 			
-		public void Print() {
+		public void ToString() {
 			PrintAst (Ast, 0);
 		}
 	}

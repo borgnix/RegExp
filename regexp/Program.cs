@@ -8,7 +8,7 @@ namespace regexp
 		{
 			string str = @"\*dsd(ds|s)dc";
 			Parser parser = new Parser(str);
-			parser.Print ();
+			parser.ToString ();
 		}
 	}
 }
