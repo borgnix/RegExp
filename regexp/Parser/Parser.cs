@@ -3,31 +3,36 @@ using System.Collections.Generic;
 
 namespace regexp
 {
-	class Parser {
-		private static HashSet<Char> SpecialTokens = new HashSet<Char> {'\\', '(', ')', '|', '*'};
-		private static HashSet<Char> EscapeTokens = new HashSet<Char> {'n', 't'};
+	class Parser
+	{
+		private static HashSet<Char> SpecialTokens = new HashSet<Char> { '\\', '(', ')', '|', '*' };
+		private static HashSet<Char> EscapeTokens = new HashSet<Char> { 'n', 't' };
 
 		private Stack<char> Symbols;
 
 		public string ExpStr { get; }
+
 		public Exp Ast { get; }
 
 		private int Cursor = 0;
 
-		public Parser (string regexp) {
+		public Parser (string regexp)
+		{
 			Symbols = new Stack<char> ();
 			ExpStr = regexp;
 			Ast = ParseRegExp ();
 			if (Symbols.Count != 0) {
-				throw new ParseAbortedExcetpion ("Parenthesis doesn't match: " + Symbols.Peek());
+				throw new ParseAbortedExcetpion ("Parenthesis doesn't match: " + Symbols.Peek ());
 			}
 		}
 
-		private static bool InRange(char c) {
+		private static bool InRange (char c)
+		{
 			return !Parser.SpecialTokens.Contains (c);
 		}
 
-		private static bool EscapeToken(char c) {
+		private static bool EscapeToken (char c)
+		{
 			return EscapeTokens.Contains (c) || SpecialTokens.Contains (c);
 		}
 		/* Grammar
@@ -37,7 +42,8 @@ namespace regexp
 		 * basicexp := <alnum> | ( <regexp> )
 		 */
 
-		private Exp ParseRegExp() {
+		private Exp ParseRegExp ()
+		{
 			var exp1 = ParseExp ();
 
 			if (Cursor >= ExpStr.Length) {
@@ -60,7 +66,8 @@ namespace regexp
 			return exp1;
 		}
 
-		private Exp ParseExp() {
+		private Exp ParseExp ()
+		{
 			Exp exp1 = ParseRepExp ();
 
 			if (exp1 == null) {
@@ -81,7 +88,8 @@ namespace regexp
 			return exp1;
 		}
 
-		private Exp ParseRepExp() {
+		private Exp ParseRepExp ()
+		{
 			Exp exp = ParseBasicExp ();
 
 			if (exp == null) {
@@ -100,7 +108,8 @@ namespace regexp
 			return exp;
 		}
 
-		private Exp ParseBasicExp() {
+		private Exp ParseBasicExp ()
+		{
 			if (Cursor >= ExpStr.Length) {
 				return null;
 			}
@@ -116,13 +125,13 @@ namespace regexp
 				throw new ParseAbortedExcetpion ("Unexpected Kleene star At " + Cursor);
 			}
 
-		    if (c == '\\') {
+			if (c == '\\') {
 				Cursor += 1;
 				if (EscapeToken (c)) {
 					Cursor += 1;
 					return Exp.buildToken (ExpStr [Cursor - 1]);
 				}
-				throw new ParseAbortedExcetpion ("Unexpected Escape Token: " + ExpStr[Cursor] + " At " + Cursor.ToString());
+				throw new ParseAbortedExcetpion ("Unexpected Escape Token: " + ExpStr [Cursor] + " At " + Cursor.ToString ());
 			} 
 
 			if (c == '(') {
@@ -131,7 +140,7 @@ namespace regexp
 				Exp exp = ParseRegExp ();
 
 				if (exp == null) {
-					throw new ParseAbortedExcetpion ("Empty Group: At " + Cursor.ToString());
+					throw new ParseAbortedExcetpion ("Empty Group: At " + Cursor.ToString ());
 				}
 
 				if (Cursor >= ExpStr.Length) {
@@ -139,8 +148,8 @@ namespace regexp
 				}
 
 				if (ExpStr [Cursor] == ')') {
-					if (Symbols.Peek() == '(') {
-						Symbols.Pop();
+					if (Symbols.Peek () == '(') {
+						Symbols.Pop ();
 					}
 					Cursor += 1;
 					return exp;
@@ -149,8 +158,9 @@ namespace regexp
 
 			return null;
 		}
-			
-		private void PrintAst(Exp ast, int level) {
+
+		private void PrintAst (Exp ast, int level)
+		{
 			for (int i = 0; i < level; i++) {
 				Console.Write ("  ");
 			}
@@ -176,8 +186,9 @@ namespace regexp
 			}
 			Console.WriteLine (")");
 		}
-			
-		public void Print()  {
+
+		public void Print ()
+		{
 			PrintAst (Ast, 0);
 		}
 	}
