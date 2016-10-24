@@ -38,9 +38,12 @@
     <Compile Include="Parser\Exp.cs" />
     <Compile Include="Parser\Parser.cs" />
     <Compile Include="Parser\ParseAbortedException.cs" />
+    <Compile Include="NFA\Nfa.cs" />
+    <Compile Include="NFA\State.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Parser\" />
+    <Folder Include="NFA\" />
   </ItemGroup>
 </Project>
