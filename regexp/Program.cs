@@ -6,9 +6,9 @@ namespace regexp
 	{
 		public static void Main (string[] args)
 		{
-			string str = @"\*dsd(ds|s)dc";
+			string str = @"\*";
 			Parser parser = new Parser(str);
-			parser.ToString ();
+			parser.Print ();
 		}
 	}
 }

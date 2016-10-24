@@ -5,6 +5,9 @@ namespace regexp
 {
 	class Parser {
 		private static HashSet<Char> SpecialTokens = new HashSet<Char> {'\\', '(', ')', '|', '*'};
+		private static HashSet<Char> EscapeTokens = new HashSet<Char> {'n', 't'};
+
+		private Stack<char> Symbols;
 
 		public string ExpStr { get; }
 		public Exp Ast { get; }
@@ -12,14 +15,21 @@ namespace regexp
 		private int Cursor = 0;
 
 		public Parser (string regexp) {
+			Symbols = new Stack<char> ();
 			ExpStr = regexp;
 			Ast = ParseRegExp ();
+			if (Symbols.Count != 0) {
+				throw new ParseAbortedExcetpion ("Parenthesis doesn't match: " + Symbols.Peek());
+			}
 		}
 
 		private static bool InRange(char c) {
 			return !Parser.SpecialTokens.Contains (c);
 		}
-			
+
+		private static bool EscapeToken(char c) {
+			return EscapeTokens.Contains (c) || SpecialTokens.Contains (c);
+		}
 		/* Grammar
 		 * regexp := <exp> '|' <regexp> | <exp>
 		 * exp := <repexp> <exp> | <repexp>
@@ -38,7 +48,11 @@ namespace regexp
 				Cursor += 1;
 				var exp2 = ParseRegExp ();
 
+				if (exp2 == null) {
+					throw new ParseAbortedExcetpion ("Expected expression after '|' ");
+				}
 				Exp exp = Exp.buildAlter (exp1, exp2);
+
 
 				return exp;
 			} 
@@ -98,20 +112,36 @@ namespace regexp
 				return Exp.buildToken (c);
 			} 
 
+			if (c == '*') {
+				throw new ParseAbortedExcetpion ("Unexpected Kleene star At " + Cursor);
+			}
+
 		    if (c == '\\') {
 				Cursor += 1;
-				if (!InRange (c)) {
+				if (EscapeToken (c)) {
 					Cursor += 1;
 					return Exp.buildToken (ExpStr [Cursor - 1]);
 				}
-				return null;
+				throw new ParseAbortedExcetpion ("Unexpected Escape Token: " + ExpStr[Cursor] + " At " + Cursor.ToString());
 			} 
 
 			if (c == '(') {
+				Symbols.Push ('(');
 				Cursor += 1;
 				Exp exp = ParseRegExp ();
 
+				if (exp == null) {
+					throw new ParseAbortedExcetpion ("Empty Group: At " + Cursor.ToString());
+				}
+
+				if (Cursor >= ExpStr.Length) {
+					return null;
+				}
+
 				if (ExpStr [Cursor] == ')') {
+					if (Symbols.Peek() == '(') {
+						Symbols.Pop();
+					}
 					Cursor += 1;
 					return exp;
 				}
@@ -147,7 +177,7 @@ namespace regexp
 			Console.WriteLine (")");
 		}
 			
-		public void ToString() {
+		public void Print()  {
 			PrintAst (Ast, 0);
 		}
 	}
