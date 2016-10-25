@@ -39,11 +39,15 @@
     <Compile Include="Parser\Parser.cs" />
     <Compile Include="Parser\ParseAbortedException.cs" />
     <Compile Include="NFA\Nfa.cs" />
-    <Compile Include="NFA\State.cs" />
+    <Compile Include="DFA\Dfa.cs" />
+    <Compile Include="DFA\DfaState.cs" />
+    <Compile Include="NFA\NfaState.cs" />
+    <Compile Include="DFA\DfaAbortedException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Parser\" />
     <Folder Include="NFA\" />
+    <Folder Include="DFA\" />
   </ItemGroup>
 </Project>

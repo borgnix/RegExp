@@ -5,41 +5,48 @@ namespace regexp
 {
 	public class Nfa
 	{
-		private static char EPSILON = '\0';
-		private State Start;
-		private State Terminal;
-		private Exp Ast;
-		private List<State> States = new List<State>();
+		public static char EPSILON = '\0';
+
+		public NfaState Start { get; }
+
+		public NfaState Terminal { get; }
+
+		public Exp Ast { get; }
+
+		public List<NfaState> States { get; }
 
 		public Nfa (Exp ast)
 		{
+			States = new List<NfaState> ();
 			Ast = ast;
 			var result = buildNfa (ast);
 			Start = result.Item1;
 			Terminal = result.Item2;
 		}
 
-		private State CreateState () {
-			State state = new State (States.Count);
+		private NfaState CreateState ()
+		{
+			NfaState state = new NfaState (States.Count);
 			States.Add (state);
 			return state;
 		}
 
-		private void AddEdge(State from, State to, char c) {
-			if (!from.To.ContainsKey(c))
-			{
-				from.To.Add (c, new List<State> ());
+		private void AddEdge (NfaState from, NfaState to, char c)
+		{
+			if (!from.To.ContainsKey (c)) {
+				from.To.Add (c, new List<NfaState> ());
 			}
 			from.To [c].Add (to);
 		}
 
-		private Tuple<State, State> buildNfa(Exp ast) {
-			State start = null;
-			State terminal = null;
+		private Tuple<NfaState, NfaState> buildNfa (Exp ast)
+		{
+			NfaState start = null;
+			NfaState terminal = null;
 
 			if (ast.Type != Exp.ExpType.Concat) {
-				start = CreateState();
-				terminal = CreateState();
+				start = CreateState ();
+				terminal = CreateState ();
 			}
 				
 			switch (ast.Type) {
@@ -79,11 +86,12 @@ namespace regexp
 				}
 			}
 				
-			return new Tuple<State, State>(start, terminal);
+			return new Tuple<NfaState, NfaState> (start, terminal);
 		}
 
-		public bool match(string s) {
-			var heads = new HashSet<State> () {Start};
+		public bool match (string s)
+		{
+			var heads = new HashSet<NfaState> () { Start };
 			for (int cursor = 0; cursor != s.Length; cursor++) {
 				if (heads.Count == 0) {
 					return false;
@@ -91,7 +99,7 @@ namespace regexp
 
 				char c = s [cursor];
 				heads = EpsilonClosure (heads);
-				var new_heads = new HashSet<State> ();
+				var new_heads = new HashSet<NfaState> ();
 
 				foreach (var head in heads) {
 					if (head.To.ContainsKey (c)) {
@@ -110,19 +118,34 @@ namespace regexp
 			return false;
 		}
 
-		private HashSet<State> EpsilonClosure(HashSet<State> states) {
-			var new_states = new HashSet<State> (states);
+		public HashSet<char> TransitionChars (HashSet<NfaState> states)
+		{
+			HashSet<char> chars = new HashSet<char> ();
 			foreach (var state in states) {
-				if (state.To.ContainsKey (EPSILON)) {
-					new_states.UnionWith(state.To[EPSILON]);
+				chars.UnionWith (state.To.Keys);
+			}
+			return chars;
+		}
+
+		public HashSet<NfaState> Closure (HashSet<NfaState> states, char transitionChar)
+		{
+			var new_states = new HashSet<NfaState> (states);
+			foreach (var state in states) {
+				if (state.To.ContainsKey (transitionChar)) {
+					new_states.UnionWith (state.To [transitionChar]);
 				}
 			}
 
 			if (states.IsProperSubsetOf (new_states)) {
-				return EpsilonClosure (new_states);
+				return Closure (new_states, transitionChar);
 			}
 
 			return new_states;
+		}
+
+		public HashSet<NfaState> EpsilonClosure (HashSet<NfaState> states)
+		{
+			return Closure (states, EPSILON);
 		}
 	}
 }
