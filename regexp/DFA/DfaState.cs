@@ -18,6 +18,7 @@ namespace regexp
 		public void AddEdge (DfaState to, char transitionChar)
 		{
 			if (To.ContainsKey (transitionChar)) {
+				To [transitionChar] = to;
 				return;
 			}
 			To.Add (transitionChar, to);

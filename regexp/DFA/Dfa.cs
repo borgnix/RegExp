@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace regexp
 {
@@ -8,7 +9,7 @@ namespace regexp
 		public Nfa Nfa { get; }
 
 		private DfaState Start;
-		private List<DfaState> Terminals;
+		private HashSet<DfaState> Terminals;
 		private List<DfaState> States;
 
 		private DfaState CreateState ()
@@ -20,7 +21,7 @@ namespace regexp
 
 		public Dfa (Nfa nfa)
 		{
-			Terminals = new List<DfaState> ();
+			Terminals = new HashSet<DfaState> ();
 			States = new List<DfaState> ();
 			initDfa (nfa);
 			Nfa = nfa;
@@ -92,6 +93,70 @@ namespace regexp
 			}
 
 			return false;
+		}
+
+		public void MinimizeDfa() {
+			var equivalence_classes = States
+				.GroupBy (state => Terminals.Contains (state))
+				.Select (gp => gp.ToList ())
+				.Select(lst => new HashSet<DfaState>(lst))
+				.ToList ();
+			var classes_to_be_processed = new Queue<HashSet<DfaState>> ();
+
+			equivalence_classes.ForEach (cls => classes_to_be_processed.Enqueue (cls));
+
+			HashSet<DfaState> head;
+			while(classes_to_be_processed.Count != 0) {
+				head = classes_to_be_processed.Dequeue ();
+				var chars = head
+					.Select (x => x.To.Keys.ToList ())
+					.SelectMany (i => i)
+					.Distinct ();
+				
+				foreach (var c in chars) {
+					var clses = head
+						.GroupBy (state => equivalence_classes.FindIndex (ec => ec.Contains (state.EdgeTo (c))))
+						.Select (gp => gp.ToList ())
+						.Select (lst => new HashSet<DfaState> (lst))
+						.Distinct ()
+						.ToList ();
+				
+					if (clses.Count > 1) {
+						equivalence_classes.Remove (head);
+						equivalence_classes.AddRange (clses);
+
+						clses.ForEach (cls => classes_to_be_processed.Enqueue (cls));
+						break;
+					}
+				}
+			}
+
+			var old_terminals = Terminals;
+			var old_states = States;
+
+			States = new List<DfaState> ();
+			Terminals = new HashSet<DfaState> ();
+
+			equivalence_classes.ForEach (_ => States.Add (new DfaState (States.Count)));
+			foreach (var state in States) {
+				var cls = equivalence_classes [state.DfaID];
+				foreach (var old_state in cls) {
+					foreach (var c in old_state.To.Keys) {
+						var old_to = old_state.EdgeTo (c);
+						int ni = equivalence_classes.FindIndex(ec => ec.Contains(old_to));
+						state.AddEdge(States[ni], c);
+					}
+
+					if(old_terminals.Contains(old_state)) {
+						Terminals.Add(state);
+					}
+
+					if (old_state == Start) {
+						Start = state;
+					}
+				}
+			}
+
 		}
 	}
 }

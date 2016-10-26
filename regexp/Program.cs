@@ -6,21 +6,24 @@ namespace regexp
 	{
 		public static void Main (string[] args)
 		{
-			string str = @"ds(d)*s|s";
+			string str = @"(1|2|3)*123";
 			Parser parser = new Parser (str);
 			parser.Print ();
 			Nfa nfa = new Nfa (parser.Ast);
 
-			Console.WriteLine(nfa.match(@"dsddds"));
-			Console.WriteLine (nfa.match (@"dss"));
-			Console.WriteLine (nfa.match (@"dsd"));
+			Console.WriteLine(nfa.Match(@"123"));
+			Console.WriteLine (nfa.Match (@"11123"));
+			Console.WriteLine (nfa.Match (@"321"));
 
 			Dfa dfa = new Dfa (nfa);
-			Console.WriteLine(dfa.Match(@"dsddds"));
-			Console.WriteLine (dfa.Match (@"dss"));
-			Console.WriteLine (dfa.Match (@"dsd"));
+			Console.WriteLine(dfa.Match(@"123"));
+			Console.WriteLine (dfa.Match (@"11123"));
+			Console.WriteLine (dfa.Match (@"321"));
 
-
+			dfa.MinimizeDfa ();
+			Console.WriteLine(dfa.Match(@"123"));
+			Console.WriteLine (dfa.Match (@"11123"));
+			Console.WriteLine (dfa.Match (@"321"));
 		}
 	}
 }

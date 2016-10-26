@@ -89,7 +89,7 @@ namespace regexp
 			return new Tuple<NfaState, NfaState> (start, terminal);
 		}
 
-		public bool match (string s)
+		public bool Match (string s)
 		{
 			var heads = new HashSet<NfaState> () { Start };
 			for (int cursor = 0; cursor != s.Length; cursor++) {
@@ -109,6 +109,7 @@ namespace regexp
 
 				heads = new_heads;
 			}
+
 			heads = EpsilonClosure (heads);
 			foreach (var head in heads) {
 				if (head == Terminal) {
