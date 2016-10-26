@@ -58,10 +58,9 @@ namespace regexp
 							state_closures.Add (new_closure);
 
 							DfaState new_state = CreateState ();
-							States.Add (new_state);
 							cur_state.AddEdge (new_state, c);
 
-							if (closure.Contains (nfa.Terminal)) {
+							if (new_closure.Contains (nfa.Terminal)) {
 								Terminals.Add (new_state);
 							}
 						} else {
