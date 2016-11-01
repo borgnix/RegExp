@@ -133,7 +133,6 @@ namespace regexp
 			}
 
 			var old_terminals = Terminals;
-			var old_states = States;
 
 			States = new List<DfaState> ();
 			Terminals = new HashSet<DfaState> ();

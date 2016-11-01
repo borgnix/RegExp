@@ -131,15 +131,11 @@ namespace regexp
 
 		public HashSet<NfaState> Closure (HashSet<NfaState> states, char transitionChar)
 		{
-			var new_states = new HashSet<NfaState> (states);
+			var new_states = new HashSet<NfaState> ();
 			foreach (var state in states) {
 				if (state.To.ContainsKey (transitionChar)) {
 					new_states.UnionWith (state.To [transitionChar]);
 				}
-			}
-
-			if (states.IsProperSubsetOf (new_states)) {
-				return Closure (new_states, transitionChar);
 			}
 
 			return new_states;
@@ -147,14 +143,25 @@ namespace regexp
 
 		public HashSet<NfaState> EpsilonClosure (HashSet<NfaState> states)
 		{
-			return Closure (states, EPSILON);
+			var new_states = new HashSet<NfaState> (states);
+			foreach (var state in states) {
+				if (state.To.ContainsKey (EPSILON)) {
+					new_states.UnionWith(state.To[EPSILON]);
+				}
+			}
+
+			if (states.IsProperSubsetOf (new_states)) {
+				return EpsilonClosure (new_states);
+			}
+
+			return new_states;
 		}
 
 		public void dump(string filename) {
 			using (StreamWriter file
 				= File.CreateText (filename)) 
 			{
-				file.WriteLine ("digraph Dfa {");
+				file.WriteLine ("digraph Nfa {");
 				foreach (var state in States) {
 					var id = state.StateID;
 					foreach (var tc in state.To.Keys) {
