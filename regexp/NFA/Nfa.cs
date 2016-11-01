@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace regexp
 {
@@ -147,6 +148,28 @@ namespace regexp
 		public HashSet<NfaState> EpsilonClosure (HashSet<NfaState> states)
 		{
 			return Closure (states, EPSILON);
+		}
+
+		public void dump(string filename) {
+			using (StreamWriter file
+				= File.CreateText (filename)) 
+			{
+				file.WriteLine ("digraph Dfa {");
+				foreach (var state in States) {
+					var id = state.StateID;
+					foreach (var tc in state.To.Keys) {
+						var to_state_list = state.To[tc];
+						string tran_char = tc == EPSILON ? "eps" : tc.ToString();
+
+						foreach (var to_state in to_state_list) {
+							file.WriteLine ("  " + id + " -> " + to_state.StateID + " [label = \"" + tran_char + "\"]");
+						}
+					}
+				}
+				file.WriteLine ("}");
+
+			};
+
 		}
 	}
 }

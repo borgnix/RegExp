@@ -6,24 +6,28 @@ namespace regexp
 	{
 		public static void Main (string[] args)
 		{
-			string str = @"(1|2|3)*123";
+			string str = @"dd*(.|d)";
 			Parser parser = new Parser (str);
 			parser.Print ();
 			Nfa nfa = new Nfa (parser.Ast);
 
-			Console.WriteLine(nfa.Match(@"123"));
-			Console.WriteLine (nfa.Match (@"11123"));
+			Console.WriteLine(nfa.Match(@"d..dd"));
+			Console.WriteLine (nfa.Match (@"dd"));
 			Console.WriteLine (nfa.Match (@"321"));
+			nfa.dump ("/tmp/nfa.dot");
 
 			Dfa dfa = new Dfa (nfa);
-			Console.WriteLine(dfa.Match(@"123"));
-			Console.WriteLine (dfa.Match (@"11123"));
+			Console.WriteLine(dfa.Match(@"d..dd"));
+			Console.WriteLine (dfa.Match (@"dd"));
 			Console.WriteLine (dfa.Match (@"321"));
+			dfa.dump ("/tmp/dfa.dot");
 
 			dfa.MinimizeDfa ();
-			Console.WriteLine(dfa.Match(@"123"));
-			Console.WriteLine (dfa.Match (@"11123"));
-			Console.WriteLine (dfa.Match (@"321"));
+			Console.WriteLine(dfa.Match(@"d..dd"));
+			Console.WriteLine (dfa.Match (@"dd"));
+			Console.WriteLine (dfa.Match (@"d."));
+			dfa.dump ("/tmp/minimizedDfa.dot");
+
 		}
 	}
 }

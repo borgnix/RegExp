@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace regexp
 {
@@ -94,7 +95,7 @@ namespace regexp
 
 			return false;
 		}
-
+			
 		public void MinimizeDfa() {
 			var equivalence_classes = States
 				.GroupBy (state => Terminals.Contains (state))
@@ -156,6 +157,24 @@ namespace regexp
 					}
 				}
 			}
+
+		}
+
+		public void dump(string filename) {
+			using (StreamWriter file
+				= File.CreateText (filename)) 
+			{
+				file.WriteLine ("digraph Dfa {");
+				foreach (var state in States) {
+					var id = state.DfaID;
+					foreach (var tc in state.To.Keys) {
+						var to_id = state.EdgeTo (tc).DfaID;
+						file.WriteLine ("  " + id + " -> " + to_id + " [label = \"" + tc + "\"]");
+					}
+				}
+				file.WriteLine ("}");
+
+			};
 
 		}
 	}
