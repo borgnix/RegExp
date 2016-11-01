@@ -170,6 +170,8 @@ namespace regexp
 				file.WriteLine ("digraph Dfa {");
 				foreach (var state in States) {
 					var id = state.DfaID;
+					string shape = Terminals.Contains(state) ? "doublecircle" : "circle";
+					file.WriteLine (String.Format ("{0}[shape={1}]", id, shape));
 					foreach (var tc in state.To.Keys) {
 						var to_id = state.EdgeTo (tc).DfaID;
 						file.WriteLine ("  " + id + " -> " + to_id + " [label = \"" + tc + "\"]");

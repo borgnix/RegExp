@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 namespace regexp
@@ -161,15 +162,17 @@ namespace regexp
 			using (StreamWriter file
 				= File.CreateText (filename)) 
 			{
-				file.WriteLine ("digraph Nfa {");
+				file.WriteLine ("strict digraph Nfa {");
 				foreach (var state in States) {
 					var id = state.StateID;
+					string shape = state == Terminal ? "doublecircle" : "circle";
+					file.WriteLine (String.Format ("{0}[shape={1}]", id, shape));
 					foreach (var tc in state.To.Keys) {
 						var to_state_list = state.To[tc];
-						string tran_char = tc == EPSILON ? "eps" : tc.ToString();
-
+						string tran_char = tc == EPSILON ? "ε" : tc.ToString();
 						foreach (var to_state in to_state_list) {
-							file.WriteLine ("  " + id + " -> " + to_state.StateID + " [label = \"" + tran_char + "\"]");
+
+							file.WriteLine(String.Format(" {0} -> {1} [label=\"{2}\"]",id, to_state.StateID, tran_char));
 						}
 					}
 				}
