@@ -102,31 +102,35 @@ namespace regexp
 				.Select (gp => gp.ToList ())
 				.Select(lst => new HashSet<DfaState>(lst))
 				.ToList ();
-			var classes_to_be_processed = new Queue<HashSet<DfaState>> ();
 
-			equivalence_classes.ForEach (cls => classes_to_be_processed.Enqueue (cls));
-
+			var class_num = -1;
 			HashSet<DfaState> head;
-			while(classes_to_be_processed.Count != 0) {
-				head = classes_to_be_processed.Dequeue ();
-				var chars = head
+			while (equivalence_classes.Count != class_num) {
+				class_num = equivalence_classes.Count;
+				for (int idx = 0; idx < equivalence_classes.Count; idx++) {
+					head = equivalence_classes [idx];
+					var chars = head
 					.Select (x => x.To.Keys.ToList ())
 					.SelectMany (i => i)
 					.Distinct ();
-				
-				foreach (var c in chars) {
-					var clses = head
+
+					var find_non_equiv = false;
+					foreach (var c in chars) {
+						var clses = head
 						.GroupBy (state => equivalence_classes.FindIndex (ec => ec.Contains (state.EdgeTo (c))))
 						.Select (gp => gp.ToList ())
 						.Select (lst => new HashSet<DfaState> (lst))
 						.Distinct ()
 						.ToList ();
 				
-					if (clses.Count > 1) {
-						equivalence_classes.Remove (head);
-						equivalence_classes.AddRange (clses);
-
-						clses.ForEach (cls => classes_to_be_processed.Enqueue (cls));
+						if (clses.Count > 1) {
+							equivalence_classes.Remove (head);
+							equivalence_classes.AddRange (clses);
+							find_non_equiv = true;
+							break;
+						}
+					}
+					if (find_non_equiv) {
 						break;
 					}
 				}
